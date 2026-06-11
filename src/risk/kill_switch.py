@@ -11,8 +11,8 @@ After activation, manual re-enable is required (never auto-resume).
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from enum import Enum
+from datetime import UTC, datetime, timedelta, timezone
+from enum import StrEnum
 from typing import Any
 
 import structlog
@@ -24,7 +24,7 @@ logger = structlog.get_logger(__name__)
 IST_OFFSET = timezone(timedelta(hours=5, minutes=30))
 
 
-class KillSwitchPath(str, Enum):
+class KillSwitchPath(StrEnum):
     CLI = "CLI"
     TELEGRAM = "TELEGRAM"
     REST_API = "REST_API"
@@ -76,7 +76,7 @@ class KillSwitch:
             logger.warning("kill_switch.activate_noop", level=level.value)
             return
 
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
 
         self._level = level
         self._activation_time = now
@@ -106,7 +106,7 @@ class KillSwitch:
             logger.warning("kill_switch.deactivate_noop")
             return
 
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         event = {
             "timestamp": now.isoformat(),
             "action": "DEACTIVATED",
@@ -130,9 +130,7 @@ class KillSwitch:
         """Return True if new orders are permitted at current level."""
         if self._level == KillSwitchLevel.INACTIVE:
             return True
-        if self._level == KillSwitchLevel.THROTTLE:
-            return True
-        return False
+        return self._level == KillSwitchLevel.THROTTLE
 
     def get_throttle_factor(self) -> float:
         """Return order rate multiplier for current level.

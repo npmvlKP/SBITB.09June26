@@ -1,21 +1,21 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Segment(str, Enum):
+class Segment(StrEnum):
     NFO = "NFO"
     CDS = "CDS"
     MCX = "MCX"
     NSE = "NSE"
 
 
-class KillSwitchLevel(str, Enum):
+class KillSwitchLevel(StrEnum):
     INACTIVE = "INACTIVE"
     THROTTLE = "THROTTLE"
     PAUSE = "PAUSE"
@@ -34,6 +34,19 @@ class Settings(BaseSettings):
     kite_api_key: str = ""
     kite_api_secret: str = ""
     kite_access_token: str = ""
+    kite_access_token_expiry_hour: int = 6
+    kite_access_token_expiry_minute: int = 1
+
+    execution_max_retries: int = 0
+    execution_retry_delay_seconds: float = 0.5
+    execution_order_timeout_seconds: float = 10.0
+    execution_router_queue_capacity: int = 100
+
+    zerodha_rate_limit_per_sec: int = 10
+    zerodha_rate_limit_per_min: int = 400
+    zerodha_rate_limit_per_day: int = 5000
+    zerodha_ws_max_subs_per_connection: int = 3000
+    zerodha_ws_max_connections: int = 3
 
     database_url: str = "postgresql+asyncpg://bot:bot@localhost:5432/sbitb"
 

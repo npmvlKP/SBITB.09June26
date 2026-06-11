@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 
 from src.risk.audit import AuditEntry, AuditEventType, AuditTrail
@@ -16,14 +16,14 @@ class TestAuditEntry:
             data=data,
             strategy_id="STRAT1",
             prev_checksum="GENESIS",
-            timestamp=datetime(2025, 6, 1, 9, 15, 0, tzinfo=timezone.utc),
+            timestamp=datetime(2025, 6, 1, 9, 15, 0, tzinfo=UTC),
         )
         entry2 = AuditEntry(
             event_type=AuditEventType.ORDER_PLACED,
             data=data,
             strategy_id="STRAT1",
             prev_checksum="GENESIS",
-            timestamp=datetime(2025, 6, 1, 9, 15, 0, tzinfo=timezone.utc),
+            timestamp=datetime(2025, 6, 1, 9, 15, 0, tzinfo=UTC),
         )
         assert entry1.checksum == entry2.checksum
 

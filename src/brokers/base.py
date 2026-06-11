@@ -9,29 +9,29 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from decimal import Decimal
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class OrderSide(str, Enum):
+class OrderSide(StrEnum):
     BUY = "BUY"
     SELL = "SELL"
 
 
-class OrderType(str, Enum):
+class OrderType(StrEnum):
     MARKET = "MARKET"
     LIMIT = "LIMIT"
     SL = "SL"
     SL_M = "SL-M"
 
 
-class ProductType(str, Enum):
+class ProductType(StrEnum):
     MIS = "MIS"
     NRML = "NRML"
     CNC = "CNC"
 
 
-class OrderStatus(str, Enum):
+class OrderStatus(StrEnum):
     PENDING = "PENDING"
     OPEN = "OPEN"
     PARTIAL_FILL = "PARTIAL_FILL"

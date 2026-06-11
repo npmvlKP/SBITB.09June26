@@ -4,12 +4,9 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-import pytest
-
 from config.settings import KillSwitchLevel
-from src.risk.kill_switch import KillSwitch, KillSwitchPath
-from src.risk.manager import OrderRequest, RiskManager, RiskState
-from src.risk.audit import AuditTrail
+from src.risk.kill_switch import KillSwitchPath
+from src.risk.manager import OrderRequest, RiskManager
 
 
 class TestRiskManagerT1T10:

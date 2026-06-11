@@ -8,19 +8,19 @@ other providers (e.g., NSE TBT, TrueData) to be swapped in.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
-from typing import Any, AsyncIterator
+from enum import StrEnum
 
 
-class DataFeed(str, Enum):
+class DataFeed(StrEnum):
     HISTORICAL = "HISTORICAL"
     REALTIME = "REALTIME"
 
 
-class InstrumentType(str, Enum):
+class InstrumentType(StrEnum):
     EQUITY = "EQUITY"
     FUTURES = "FUTURES"
     OPTIONS_CE = "OPTIONS_CE"

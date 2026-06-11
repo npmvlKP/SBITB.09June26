@@ -10,17 +10,17 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class SignalDirection(str, Enum):
+class SignalDirection(StrEnum):
     LONG = "LONG"
     SHORT = "SHORT"
     FLAT = "FLAT"
 
 
-class SignalStrength(str, Enum):
+class SignalStrength(StrEnum):
     WEAK = "WEAK"
     MODERATE = "MODERATE"
     STRONG = "STRONG"

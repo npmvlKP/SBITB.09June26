@@ -38,7 +38,6 @@ include = ["src*", "config*"]
 [tool.ruff]
 target-version = "py311"
 line-length = 88
-src-paths = ["src", "config", "tests"]
 
 [tool.ruff.lint]
 select = [
@@ -46,6 +45,9 @@ select = [
     "T20", "RSE", "PLC", "PLE", "PLW", "PERF",
 ]
 ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["T20"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["Decimal"]

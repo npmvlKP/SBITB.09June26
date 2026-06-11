@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import pytest
+
 from src.risk.compliance import (
     COMPLIANCE,
-    SEBICompliance,
     is_algo_registration_required,
     validate_order_tag,
 )
@@ -73,6 +74,3 @@ class TestIsAlgoRegistrationRequired:
 
     def test_above_threshold_requires_registration(self) -> None:
         assert is_algo_registration_required(11) is True
-
-
-import pytest

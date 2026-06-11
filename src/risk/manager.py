@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -26,7 +26,6 @@ import structlog
 
 from config.settings import settings
 from src.risk.audit import AuditEventType, AuditTrail
-from src.risk.compliance import COMPLIANCE
 from src.risk.kill_switch import KillSwitch
 
 logger = structlog.get_logger(__name__)
@@ -154,7 +153,7 @@ class RiskManager:
         )
 
     def _t2_trading_hours(self, order: OrderRequest) -> RiskCheckResult:
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         start_h = settings.trading_start_hour
         start_m = settings.trading_start_minute
         end_h = settings.trading_end_hour

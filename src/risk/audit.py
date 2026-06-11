@@ -11,9 +11,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 import structlog
@@ -21,7 +21,7 @@ import structlog
 logger = structlog.get_logger(__name__)
 
 
-class AuditEventType(str, Enum):
+class AuditEventType(StrEnum):
     ORDER_PLACED = "ORDER_PLACED"
     ORDER_CONFIRMED = "ORDER_CONFIRMED"
     ORDER_PARTIAL_FILL = "ORDER_PARTIAL_FILL"
@@ -55,7 +55,7 @@ class AuditEntry:
         self.strategy_id = strategy_id
         self.order_id = order_id
         self.prev_checksum = prev_checksum
-        self.timestamp = timestamp or datetime.now(tz=timezone.utc)
+        self.timestamp = timestamp or datetime.now(tz=UTC)
 
         self.checksum = self._compute_checksum()
 
