@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "indian-trading-bot"
+version = "0.1.0"
+description = "SEBI-compliant algorithmic options trading system for Indian F&O markets (NSE) with Zerodha Kite"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+dependencies = [
+    "kiteconnect>=4.1.0",
+    "structlog>=24.1.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "httpx>=0.27.0",
+    "asyncpg>=0.29.0",
+    "python-dotenv>=1.0.0",
+    "cryptography>=42.0.0",
+    "psutil>=5.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.3.0",
+    "mypy>=1.8.0",
+    "bandit[toml]>=1.7.0",
+    "pre-commit>=3.6.0",
+    "pip-audit>=0.7.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["src*", "config*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+src-paths = ["src", "config", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "N", "UP", "B", "A", "SIM",
+    "T20", "RSE", "PLC", "PLE", "PLW", "PERF",
+]
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["Decimal"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["kiteconnect.*", "asyncpg.*", "psutil.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short --strict-markers"
+markers = [
+    "unit: unit tests",
+    "integration: integration tests",
+    "compliance: SEBI compliance tests",
+]
+
+[tool.bandit]
+targets = ["src", "config"]
+skips = ["B101"]
+
+[tool.coverage.run]
+source = ["src", "config"]
+branch = true
+omit = ["tests/*"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
