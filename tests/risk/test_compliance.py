@@ -23,9 +23,7 @@ class TestSEBICompliance:
         No constant must exist for it."""
         for attr in dir(COMPLIANCE):
             if "500" in attr.lower() or "resting" in attr.lower():
-                pytest.fail(
-                    f"Found prohibited 500ms resting time attribute: {attr}"
-                )
+                pytest.fail(f"Found prohibited 500ms resting time attribute: {attr}")
 
     def test_zerodha_rate_limits(self) -> None:
         assert COMPLIANCE.ZERODHA_RATE_LIMIT_PER_SEC == 10

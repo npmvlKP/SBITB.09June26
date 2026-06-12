@@ -57,9 +57,7 @@ class MockBroker(BrokerInterface):
             data={"mock": True},
         )
 
-    async def cancel_order(
-        self, order_id: str, segment: str = ""
-    ) -> BrokerOrderResult:
+    async def cancel_order(self, order_id: str, segment: str = "") -> BrokerOrderResult:
         if order_id in self._orders:
             self._orders[order_id]["status"] = "CANCELLED"
         return BrokerOrderResult(
@@ -83,9 +81,7 @@ class MockBroker(BrokerInterface):
         return results
 
     async def get_orders(self) -> list[dict[str, Any]]:
-        return [
-            {"order_id": oid, **data} for oid, data in self._orders.items()
-        ]
+        return [{"order_id": oid, **data} for oid, data in self._orders.items()]
 
     async def get_positions(self) -> list[Position]:
         return list(self._positions)

@@ -23,9 +23,7 @@ class TestKillSwitch:
         assert kill_switch.is_active is True
         assert kill_switch.activation_time is not None
 
-    def test_activate_pause_blocks_orders(
-        self, kill_switch: KillSwitch
-    ) -> None:
+    def test_activate_pause_blocks_orders(self, kill_switch: KillSwitch) -> None:
         kill_switch.activate(
             KillSwitchLevel.PAUSE,
             path=KillSwitchPath.TELEGRAM,

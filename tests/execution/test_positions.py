@@ -12,17 +12,19 @@ from src.risk.kill_switch import KillSwitchLevel
 
 @pytest.mark.asyncio
 async def test_sync_fetches_positions(position_tracker, mock_broker):
-    mock_broker.set_positions([
-        Position(
-            symbol="NIFTY25JUNFUT",
-            segment="NFO",
-            quantity=50,
-            average_price=Decimal("24300"),
-            current_price=Decimal("24500"),
-            pnl=Decimal("10000"),
-            product=ProductType.MIS,
-        ),
-    ])
+    mock_broker.set_positions(
+        [
+            Position(
+                symbol="NIFTY25JUNFUT",
+                segment="NFO",
+                quantity=50,
+                average_price=Decimal("24300"),
+                current_price=Decimal("24500"),
+                pnl=Decimal("10000"),
+                product=ProductType.MIS,
+            ),
+        ]
+    )
     await position_tracker.sync()
     snapshot = position_tracker.get_snapshot("NIFTY25JUNFUT")
     assert snapshot is not None
@@ -79,17 +81,19 @@ async def test_update_fill_sell_realizes_pnl(position_tracker):
 async def test_daily_loss_limit_triggers_kill(
     position_tracker, mock_broker, kill_switch, risk_state
 ):
-    mock_broker.set_positions([
-        Position(
-            symbol="NIFTY25JUNFUT",
-            segment="NFO",
-            quantity=50,
-            average_price=Decimal("25000"),
-            current_price=Decimal("24000"),
-            pnl=Decimal("-60000"),
-            product=ProductType.MIS,
-        ),
-    ])
+    mock_broker.set_positions(
+        [
+            Position(
+                symbol="NIFTY25JUNFUT",
+                segment="NFO",
+                quantity=50,
+                average_price=Decimal("25000"),
+                current_price=Decimal("24000"),
+                pnl=Decimal("-60000"),
+                product=ProductType.MIS,
+            ),
+        ]
+    )
     mock_broker.set_margins(
         MarginInfo(
             available=Decimal("100000"),
@@ -129,26 +133,28 @@ async def test_daily_pnl_total(position_tracker):
 
 @pytest.mark.asyncio
 async def test_get_all_snapshots(position_tracker, mock_broker):
-    mock_broker.set_positions([
-        Position(
-            symbol="NIFTY25JUNFUT",
-            segment="NFO",
-            quantity=50,
-            average_price=Decimal("24300"),
-            current_price=Decimal("24500"),
-            pnl=Decimal("10000"),
-            product=ProductType.MIS,
-        ),
-        Position(
-            symbol="BANKNIFTY25JUNFUT",
-            segment="NFO",
-            quantity=25,
-            average_price=Decimal("52000"),
-            current_price=Decimal("52500"),
-            pnl=Decimal("12500"),
-            product=ProductType.MIS,
-        ),
-    ])
+    mock_broker.set_positions(
+        [
+            Position(
+                symbol="NIFTY25JUNFUT",
+                segment="NFO",
+                quantity=50,
+                average_price=Decimal("24300"),
+                current_price=Decimal("24500"),
+                pnl=Decimal("10000"),
+                product=ProductType.MIS,
+            ),
+            Position(
+                symbol="BANKNIFTY25JUNFUT",
+                segment="NFO",
+                quantity=25,
+                average_price=Decimal("52000"),
+                current_price=Decimal("52500"),
+                pnl=Decimal("12500"),
+                product=ProductType.MIS,
+            ),
+        ]
+    )
     await position_tracker.sync()
     snapshots = position_tracker.get_all_snapshots()
     assert len(snapshots) == 2

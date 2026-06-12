@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from typing import Any
+from typing import Any, cast
 
 import structlog
 
@@ -110,9 +110,7 @@ class ZerodhaAdapter(BrokerInterface):
         logger.info("zerodha.authenticated", api_key=self._api_key)
         return self._access_token
 
-    async def generate_session(
-        self, request_token: str
-    ) -> dict[str, Any]:
+    async def generate_session(self, request_token: str) -> dict[str, Any]:
         """Complete OAuth flow: exchange request_token for access_token."""
         try:
             from kiteconnect import KiteConnect  # noqa: PLC0415
@@ -135,7 +133,7 @@ class ZerodhaAdapter(BrokerInterface):
             self._kite.set_session_expiry_hook(self._session_expiry_hook)
 
         logger.info("zerodha.session_generated")
-        return data
+        return cast("dict[str, Any]", data)
 
     def login_url(self) -> str:
         """Return Zerodha Kite login URL for OAuth redirect."""
@@ -143,7 +141,7 @@ class ZerodhaAdapter(BrokerInterface):
             from kiteconnect import KiteConnect  # noqa: PLC0415
 
             kite = KiteConnect(api_key=self._api_key)
-            return kite.login_url()
+            return cast("str", kite.login_url())
         except ImportError:
             return f"https://kite.zerodha.com/connect/login?api_key={self._api_key}&v=3"
 
@@ -197,9 +195,7 @@ class ZerodhaAdapter(BrokerInterface):
                 message=str(exc),
             )
 
-    async def cancel_order(
-        self, order_id: str, segment: str = ""
-    ) -> BrokerOrderResult:
+    async def cancel_order(self, order_id: str, segment: str = "") -> BrokerOrderResult:
         """Cancel an existing order."""
         self._ensure_connected()
 
@@ -250,7 +246,7 @@ class ZerodhaAdapter(BrokerInterface):
     async def get_orders(self) -> list[dict[str, Any]]:
         """Fetch all orders from Zerodha."""
         self._ensure_connected()
-        return self._kite.orders()
+        return cast("list[dict[str, Any]]", self._kite.orders())
 
     async def get_positions(self) -> list[Position]:
         """Fetch current positions, converting float→Decimal."""
@@ -269,9 +265,7 @@ class ZerodhaAdapter(BrokerInterface):
                     average_price=Decimal(str(entry.get("average_price", 0))),
                     current_price=Decimal(str(entry.get("last_price", 0))),
                     pnl=Decimal(str(entry.get("pnl", 0))),
-                    product=ProductType(
-                        entry.get("product", "MIS").upper()
-                    ),
+                    product=ProductType(entry.get("product", "MIS").upper()),
                 )
             )
         return positions
@@ -310,8 +304,7 @@ class ZerodhaAdapter(BrokerInterface):
         self._ensure_connected()
         data = self._kite.ltp(*instruments)
         return {
-            key: Decimal(str(val.get("last_price", 0)))
-            for key, val in data.items()
+            key: Decimal(str(val.get("last_price", 0))) for key, val in data.items()
         }
 
     async def get_historical_data(
@@ -355,6 +348,5 @@ class ZerodhaAdapter(BrokerInterface):
         """Raise if KiteConnect is not initialized."""
         if self._kite is None:
             raise RuntimeError(
-                "Zerodha KiteConnect not initialized. "
-                "Call authenticate() first."
+                "Zerodha KiteConnect not initialized. Call authenticate() first."
             )

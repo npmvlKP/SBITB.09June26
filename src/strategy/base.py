@@ -64,24 +64,16 @@ class StrategyBase(ABC):
         self.state = StrategyState(positions={})
 
     @abstractmethod
-    async def generate_signal(
-        self, market_data: dict[str, Any]
-    ) -> Signal | None:
-        ...
+    async def generate_signal(self, market_data: dict[str, Any]) -> Signal | None: ...
 
     @abstractmethod
-    async def on_fill(
-        self, symbol: str, qty: int, price: Decimal
-    ) -> None:
-        ...
+    async def on_fill(self, symbol: str, qty: int, price: Decimal) -> None: ...
 
     @abstractmethod
-    async def on_stop(self) -> None:
-        ...
+    async def on_stop(self) -> None: ...
 
     @abstractmethod
-    def get_state(self) -> StrategyState:
-        ...
+    def get_state(self) -> StrategyState: ...
 
     @property
     def strategy_id(self) -> str:

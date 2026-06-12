@@ -164,9 +164,7 @@ async def test_cancel_order(adapter, mock_kite):
 @pytest.mark.asyncio
 async def test_cancel_all_orders(adapter, mock_kite):
     adapter._kite = mock_kite
-    mock_kite.cancel_order.side_effect = (
-        lambda variety, order_id, **kwargs: order_id
-    )
+    mock_kite.cancel_order.side_effect = lambda variety, order_id, **kwargs: order_id
     mock_kite.orders.return_value = [
         {"order_id": "001", "status": "OPEN", "exchange": "NFO"},
         {"order_id": "002", "status": "COMPLETE", "exchange": "NFO"},

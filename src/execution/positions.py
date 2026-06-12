@@ -14,10 +14,10 @@ from decimal import Decimal
 
 import structlog
 
-from config.settings import settings
+from config.settings import KillSwitchLevel, settings
 from src.brokers.base import BrokerInterface, MarginInfo
 from src.risk.audit import AuditEventType, AuditTrail
-from src.risk.kill_switch import KillSwitch, KillSwitchLevel, KillSwitchPath
+from src.risk.kill_switch import KillSwitch, KillSwitchPath
 from src.risk.manager import RiskState
 
 logger = structlog.get_logger(__name__)
@@ -68,9 +68,7 @@ class PositionTracker:
         self._kill_switch = kill_switch
         self._audit_trail = audit_trail
         self._risk_state = risk_state
-        self._daily_loss_limit = (
-            daily_loss_limit or settings.daily_loss_limit
-        )
+        self._daily_loss_limit = daily_loss_limit or settings.daily_loss_limit
         self._margin_threshold = (
             margin_threshold or settings.margin_utilization_threshold
         )
@@ -141,24 +139,21 @@ class PositionTracker:
             if side == "BUY":
                 new_qty = existing.quantity + quantity
                 if new_qty != 0:
-                    total_cost = existing.entry_price * abs(
-                        existing.quantity
-                    ) + fill_price * quantity
+                    total_cost = (
+                        existing.entry_price * abs(existing.quantity)
+                        + fill_price * quantity
+                    )
                     existing.entry_price = total_cost / abs(new_qty)
                 existing.quantity = new_qty
             else:
-                realized = (fill_price - existing.entry_price) * Decimal(
-                    abs(quantity)
-                )
+                realized = (fill_price - existing.entry_price) * Decimal(abs(quantity))
                 self._daily_pnl.realized += realized
                 existing.quantity -= quantity
 
             existing.current_price = fill_price
             existing.timestamp = datetime.now(tz=UTC)
 
-        self._risk_state.positions[symbol] = Decimal(
-            self._positions[symbol].quantity
-        )
+        self._risk_state.positions[symbol] = Decimal(self._positions[symbol].quantity)
         logger.info(
             "positions.fill_updated",
             symbol=symbol,

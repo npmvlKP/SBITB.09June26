@@ -46,9 +46,7 @@ class TestAuditEntry:
 class TestAuditTrail:
     def test_hash_chain_integrity(self) -> None:
         trail = AuditTrail()
-        trail.record(
-            AuditEventType.SESSION_START, data={"user": "bot"}
-        )
+        trail.record(AuditEventType.SESSION_START, data={"user": "bot"})
         trail.record(
             AuditEventType.ORDER_PLACED,
             data={"symbol": "NIFTY"},

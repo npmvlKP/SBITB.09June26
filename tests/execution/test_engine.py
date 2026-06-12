@@ -91,9 +91,7 @@ async def test_submit_risk_rejected_insufficient_margin(execution_engine):
 
 
 @pytest.mark.asyncio
-async def test_submit_broker_rejected(
-    execution_engine, mock_broker, valid_order
-):
+async def test_submit_broker_rejected(execution_engine, mock_broker, valid_order):
     mock_broker.set_should_reject(True)
     result = await execution_engine.submit(valid_order)
     assert result.status == ExecutionStatus.BROKER_REJECTED
@@ -118,17 +116,13 @@ async def test_kill_switch_guard_records_audit(
     )
     await execution_engine.submit(valid_order)
     entries = audit_trail.get_entries()
-    rejection_events = [
-        e for e in entries if e["event_type"] == "ORDER_REJECTED"
-    ]
+    rejection_events = [e for e in entries if e["event_type"] == "ORDER_REJECTED"]
     assert len(rejection_events) >= 1
     assert "KILL_SWITCH_ACTIVE" in rejection_events[0]["data"]["reason"]
 
 
 @pytest.mark.asyncio
-async def test_throttle_allows_orders(
-    execution_engine, kill_switch, valid_order
-):
+async def test_throttle_allows_orders(execution_engine, kill_switch, valid_order):
     kill_switch.activate(
         KillSwitchLevel.THROTTLE,
         path=KillSwitchPath.CLI,

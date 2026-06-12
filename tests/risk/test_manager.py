@@ -28,9 +28,7 @@ class TestRiskManagerT1T10:
         t1 = next(r for r in results if r.check_id == "T1")
         assert t1.passed is True
 
-    def test_t3_exceeds_max_order_value(
-        self, risk_manager: RiskManager
-    ) -> None:
+    def test_t3_exceeds_max_order_value(self, risk_manager: RiskManager) -> None:
         huge_order = OrderRequest(
             symbol="NIFTY24620CE24000",
             segment="NFO",
@@ -42,9 +40,7 @@ class TestRiskManagerT1T10:
         t3 = next(r for r in results if r.check_id == "T3")
         assert t3.passed is False
 
-    def test_t6_insufficient_margin(
-        self, risk_manager: RiskManager
-    ) -> None:
+    def test_t6_insufficient_margin(self, risk_manager: RiskManager) -> None:
         risk_manager.state.margin_available = Decimal("100")
         order = OrderRequest(
             symbol="NIFTY24620CE24000",
@@ -79,8 +75,16 @@ class TestRiskManagerT1T10:
         results = risk_manager.check(valid_order)
         check_ids = [r.check_id for r in results]
         assert set(check_ids) == {
-            "T1", "T2", "T3", "T4", "T5",
-            "T6", "T7", "T8", "T9", "T10",
+            "T1",
+            "T2",
+            "T3",
+            "T4",
+            "T5",
+            "T6",
+            "T7",
+            "T8",
+            "T9",
+            "T10",
         }
 
     def test_is_order_allowed_returns_false_on_failure(

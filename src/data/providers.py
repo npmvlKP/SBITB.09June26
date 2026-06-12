@@ -78,23 +78,13 @@ class MarketDataProvider(ABC):
         from_date: datetime,
         to_date: datetime,
         interval: str = "day",
-    ) -> list[OHLCV]:
-        ...
+    ) -> list[OHLCV]: ...
 
     @abstractmethod
-    async def get_quote(
-        self, instrument_tokens: list[int]
-    ) -> dict[int, Quote]:
-        ...
+    async def get_quote(self, instrument_tokens: list[int]) -> dict[int, Quote]: ...
 
     @abstractmethod
-    async def subscribe(
-        self, instrument_tokens: list[int]
-    ) -> AsyncIterator[Tick]:
-        ...
+    async def subscribe(self, instrument_tokens: list[int]) -> AsyncIterator[Tick]: ...
 
     @abstractmethod
-    async def get_instruments(
-        self, exchange: str = "NFO"
-    ) -> list[Instrument]:
-        ...
+    async def get_instruments(self, exchange: str = "NFO") -> list[Instrument]: ...

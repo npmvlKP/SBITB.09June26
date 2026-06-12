@@ -107,9 +107,7 @@ class RiskManager:
                 "strategy_id": order.strategy_id,
                 "checks_passed": sum(1 for r in results if r.passed),
                 "checks_total": len(results),
-                "failed_checks": [
-                    r.check_id for r in results if not r.passed
-                ],
+                "failed_checks": [r.check_id for r in results if not r.passed],
             },
             strategy_id=order.strategy_id,
         )
@@ -134,10 +132,9 @@ class RiskManager:
         self.state.order_timestamps.append(time.time())
         order_value = order.price * Decimal(order.quantity)
         self.state.current_exposure += order_value
-        self.state.positions[order.symbol] = (
-            self.state.positions.get(order.symbol, Decimal("0"))
-            + Decimal(order.quantity)
-        )
+        self.state.positions[order.symbol] = self.state.positions.get(
+            order.symbol, Decimal("0")
+        ) + Decimal(order.quantity)
 
     def _t1_symbol_allowlist(self, order: OrderRequest) -> RiskCheckResult:
         allowed = order.symbol in self._allowed_symbols
@@ -159,9 +156,7 @@ class RiskManager:
         end_h = settings.trading_end_hour
         end_m = settings.trading_end_minute
 
-        ist_now = now.astimezone(
-            timezone(timedelta(hours=5, minutes=30))
-        )
+        ist_now = now.astimezone(timezone(timedelta(hours=5, minutes=30)))
         current_minutes = ist_now.hour * 60 + ist_now.minute
         start_minutes = start_h * 60 + start_m
         end_minutes = end_h * 60 + end_m
@@ -170,11 +165,7 @@ class RiskManager:
         return RiskCheckResult(
             passed=in_hours,
             check_id="T2",
-            message=(
-                "Within trading hours"
-                if in_hours
-                else "Outside trading hours"
-            ),
+            message=("Within trading hours" if in_hours else "Outside trading hours"),
             details={"current_utc": now.isoformat()},
         )
 
@@ -210,12 +201,8 @@ class RiskManager:
         one_sec_ago = now - 1.0
         one_min_ago = now - 60.0
 
-        recent_sec = sum(
-            1 for t in self.state.order_timestamps if t > one_sec_ago
-        )
-        recent_min = sum(
-            1 for t in self.state.order_timestamps if t > one_min_ago
-        )
+        recent_sec = sum(1 for t in self.state.order_timestamps if t > one_sec_ago)
+        recent_min = sum(1 for t in self.state.order_timestamps if t > one_min_ago)
 
         within_sec = recent_sec < settings.max_orders_per_second
         within_min = recent_min < settings.max_orders_per_minute

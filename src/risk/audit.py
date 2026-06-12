@@ -119,9 +119,7 @@ class AuditTrail:
         order_id: str = "",
         timestamp: datetime | None = None,
     ) -> AuditEntry:
-        prev_checksum = (
-            self._entries[-1].checksum if self._entries else "GENESIS"
-        )
+        prev_checksum = self._entries[-1].checksum if self._entries else "GENESIS"
         entry = AuditEntry(
             event_type=event_type,
             data=data,

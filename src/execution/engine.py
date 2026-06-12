@@ -89,6 +89,36 @@ class ExecutionEngine:
         """Submit an order through the full risk-gated pipeline."""
         now = datetime.now(tz=UTC)
 
+        kill_result = self._check_kill_switch(order, now)
+        if kill_result is not None:
+            return kill_result
+
+        risk_result = self._check_risk(order, now)
+        if risk_result is not None:
+            return risk_result
+
+        broker_order = self._to_broker_order(order)
+        broker_result = await self._submit_with_retry(broker_order)
+
+        if broker_result.status == OrderStatus.REJECTED:
+            return self._handle_broker_rejection(order, broker_result, now)
+
+        self._record_success(order, broker_result)
+
+        return ExecutionResult(
+            order_id=broker_result.order_id,
+            status=ExecutionStatus.BROKER_SUBMITTED,
+            risk_checks_passed=True,
+            failed_checks=[],
+            broker_result=broker_result,
+            submitted_at=now,
+            message="Order submitted to broker",
+        )
+
+    def _check_kill_switch(
+        self, order: OrderRequest, now: datetime
+    ) -> ExecutionResult | None:
+        """Guard: reject immediately if kill switch is active."""
         try:
             self._kill_switch.guard()
         except KillSwitchError as exc:
@@ -115,12 +145,13 @@ class ExecutionEngine:
                 submitted_at=now,
                 message=str(exc),
             )
+        return None
 
+    def _check_risk(self, order: OrderRequest, now: datetime) -> ExecutionResult | None:
+        """Run T1-T10 risk checks; return rejection result if any fail."""
         results = self._risk_manager.check(order)
         failed_checks = [r.check_id for r in results if not r.passed]
-        all_passed = len(failed_checks) == 0
-
-        if not all_passed:
+        if failed_checks:
             logger.warning(
                 "execution.risk_rejected",
                 symbol=order.symbol,
@@ -135,33 +166,42 @@ class ExecutionEngine:
                 submitted_at=now,
                 message=f"Failed risk checks: {', '.join(failed_checks)}",
             )
+        return None
 
-        broker_order = self._to_broker_order(order)
-        broker_result = await self._submit_with_retry(broker_order)
+    def _handle_broker_rejection(
+        self,
+        order: OrderRequest,
+        broker_result: BrokerOrderResult,
+        now: datetime,
+    ) -> ExecutionResult:
+        """Record audit and return rejection result for broker-rejected order."""
+        self._audit_trail.record(
+            event_type=AuditEventType.ORDER_REJECTED,
+            data={
+                "symbol": order.symbol,
+                "order_id": broker_result.order_id,
+                "reason": broker_result.message,
+            },
+            strategy_id=order.strategy_id,
+            order_id=broker_result.order_id,
+        )
+        return ExecutionResult(
+            order_id=broker_result.order_id,
+            status=ExecutionStatus.BROKER_REJECTED,
+            risk_checks_passed=True,
+            failed_checks=[],
+            broker_result=broker_result,
+            submitted_at=now,
+            message=broker_result.message,
+        )
 
-        if broker_result.status == OrderStatus.REJECTED:
-            self._audit_trail.record(
-                event_type=AuditEventType.ORDER_REJECTED,
-                data={
-                    "symbol": order.symbol,
-                    "order_id": broker_result.order_id,
-                    "reason": broker_result.message,
-                },
-                strategy_id=order.strategy_id,
-                order_id=broker_result.order_id,
-            )
-            return ExecutionResult(
-                order_id=broker_result.order_id,
-                status=ExecutionStatus.BROKER_REJECTED,
-                risk_checks_passed=True,
-                failed_checks=[],
-                broker_result=broker_result,
-                submitted_at=now,
-                message=broker_result.message,
-            )
-
+    def _record_success(
+        self,
+        order: OrderRequest,
+        broker_result: BrokerOrderResult,
+    ) -> None:
+        """Record order-placed/confirmed audit and update risk state."""
         self._risk_manager.record_order_placed(order)
-
         event_type = (
             AuditEventType.ORDER_PLACED
             if broker_result.status == OrderStatus.PENDING
@@ -179,22 +219,11 @@ class ExecutionEngine:
             strategy_id=order.strategy_id,
             order_id=broker_result.order_id,
         )
-
         logger.info(
             "execution.order_submitted",
             order_id=broker_result.order_id,
             symbol=order.symbol,
             status=broker_result.status.value,
-        )
-
-        return ExecutionResult(
-            order_id=broker_result.order_id,
-            status=ExecutionStatus.BROKER_SUBMITTED,
-            risk_checks_passed=True,
-            failed_checks=[],
-            broker_result=broker_result,
-            submitted_at=now,
-            message="Order submitted to broker",
         )
 
     async def cancel(self, order_id: str, segment: str = "") -> ExecutionResult:
@@ -236,9 +265,7 @@ class ExecutionEngine:
             message="Order cancelled",
         )
 
-    async def _submit_with_retry(
-        self, broker_order: BrokerOrder
-    ) -> BrokerOrderResult:
+    async def _submit_with_retry(self, broker_order: BrokerOrder) -> BrokerOrderResult:
         """Submit order to broker with optional retry on transient errors."""
         last_exception: Exception | None = None
         for attempt in range(1 + self._max_retries):
@@ -264,17 +291,17 @@ class ExecutionEngine:
         ot = OrderType.MARKET
         pt = ProductType.MIS
 
-        for member in OrderSide:
-            if member.value == order.order_type.upper() and member.value in (
+        for side_member in OrderSide:
+            if side_member.value == order.order_type.upper() and side_member.value in (
                 "BUY",
                 "SELL",
             ):
-                side = member
+                side = side_member
                 break
 
-        for member in OrderType:
-            if member.value == order.order_type.upper():
-                ot = member
+        for ot_member in OrderType:
+            if ot_member.value == order.order_type.upper():
+                ot = ot_member
                 break
 
         return BrokerOrder(
